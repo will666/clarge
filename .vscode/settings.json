@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "dirent.h": "c",
+        "errno.h": "c",
+        "stat.h": "c",
+        "stdlib.h": "c",
+        "file.h": "c",
+        "cstdio": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "file_item.h": "c"
+    },
+    "editor.formatOnSave": true,
+}
