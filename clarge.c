@@ -10,7 +10,7 @@
 
 // #define BIG_FILE_SIZE (1024 * 1024) // overrides from main.h - testing...
 // #define ITEMS_ALLOC 1000
-#include "main.h"
+#include "clarge.h"
 #include "helpers.h"
 
 static const size_t file_size_limit = BIG_FILE_SIZE;

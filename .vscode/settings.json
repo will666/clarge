@@ -10,7 +10,8 @@
         "string": "c",
         "string_view": "c",
         "initializer_list": "c",
-        "file_item.h": "c"
+        "file_item.h": "c",
+        "clarge.h": "c"
     },
     "editor.formatOnSave": true,
 }

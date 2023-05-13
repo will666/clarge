@@ -1,5 +1,5 @@
-#ifndef MAIN_H
-#define MAIN_H
+#ifndef CLARGE_H
+#define CLARGE_H
 
 #include <stdlib.h>
 

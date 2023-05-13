@@ -1,8 +1,8 @@
 CC = clang
 CFLAGS = -Wall -Wextra -std=c11 -pedantic
-OUTPUT = ./bin/main
+OUTPUT = ./bin/clarge
 OPTIM = -O3
-SRC = main.c file_item.c helpers.c
+SRC = clarge.c file_item.c helpers.c
 
 build:
 	$(CC) $(CFLAGS) -g -o $(OUTPUT) $(SRC)
