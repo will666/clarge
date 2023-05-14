@@ -1,5 +1,3 @@
-#define _GNU_SOURCE // TODO: check for GNU licence limitations
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,68 +6,99 @@
 #include <stdbool.h>
 #include <assert.h>
 
+// - Testing...
+// #define LOG_PATH "./logs/"
+// #define BIG_FILE_SIZE (1024 * 1024) // overrides from main.h - testing...
+// #define ITEMS_ALLOC 10000
+// -
+
 #include "clarge.h"
 #include "helpers.h"
 
-// #define BIG_FILE_SIZE (1024 * 1024) // overrides from main.h - testing...
-// #define ITEMS_ALLOC 10000
-
-static const size_t file_size_limit = BIG_FILE_SIZE;
+static const size_t file_size_limit = TARGET_FILE_SIZE;
 static int items_alloc = ITEMS_ALLOC;
 static int total_dirs_unprocessed = 0;
 static int total_files_found = 0;
 static int total_files_unprocessed = 0;
-
-#define EXPORT_TO_FILE true
+static bool opt_verbose = false;
+static bool opt_save_outpout = false;
 
 int main(int argc, char **argv)
 {
-	// assert(argc > 0);
+	const char *program = shift_args(&argc, &argv);
 
-	if (argc == 1)
+	if (argc == 0)
 	{
 		printf("[error] no path specified, see help below\n\n");
-		const char *program = shift_args(&argc, &argv);
 		usage(program);
 		return EXIT_FAILURE;
 	}
 
-	// TODO: implement flags arg
-
-	char *dir = argv[1];
-	printf("\nLooking for files in: %s%s%s\n\n", BLUE, dir, NORMAL_COLOR);
-
-	logger_start(STDERR_LOG_FILE, true);
-
-	File_item *data = (File_item *)calloc(items_alloc, sizeof(File_item));
-
-	if (data == NULL)
+	while (argc > 0)
 	{
-		printf("%s\n", ERR_HEAP_ALLOC_MSG);
-		return EXIT_FAILURE;
+		char *flag = shift_args(&argc, &argv);
+		if (strcmp(flag, "-d") == 0)
+		{
+			if (argc <= 0)
+			{
+				printf("[error] no path specified, see help below\n\n");
+				exit(1);
+			}
+			break;
+		}
+		else if (strcmp(flag, "-v") == 0)
+		{
+			opt_verbose = true;
+		}
+		else if (strcmp(flag, "-o") == 0)
+		{
+			opt_save_outpout = true;
+		}
+		else if (strcmp(flag, "-h") == 0)
+		{
+			usage(program);
+			exit(0);
+		}
+		else
+		{
+			char *file_path = flag;
+
+			printf("\nLooking for files in: %s%s%s\n\n", BLUE, file_path, NORMAL_COLOR);
+
+			File_item *data = (File_item *)calloc(items_alloc, sizeof(File_item));
+			if (data == NULL)
+			{
+				printf("%s\n", ERR_HEAP_ALLOC_MSG);
+				return EXIT_FAILURE;
+			}
+
+			if (!opt_verbose)
+				logger_start(STDERR_LOG_FILE, true);
+
+			get_files(file_path, &data);
+
+			printf("\nResults:\n");
+			printf("  - found: %s%i file(s) bigger than %s%s\n", GREEN, total_files_found, human_size(file_size_limit), NORMAL_COLOR);
+			printf("  - unreadable files:         %s%i%s\n", BLUE, total_files_unprocessed, NORMAL_COLOR);
+			printf("  - unaccessible directories: %s%i%s\n\n", BLUE, total_dirs_unprocessed, NORMAL_COLOR);
+			printf("Logs:\n");
+			printf("  - files found:       %s%s%s\n", BLUE, RESULTS_TXT_FILE, NORMAL_COLOR);
+			printf("  - warnings & errors: %s%s%s\n\n", BLUE, STDERR_LOG_FILE, NORMAL_COLOR);
+
+			if (opt_save_outpout && total_files_found > 0)
+				save_to_file(&data, RESULTS_TXT_FILE);
+
+			for (int i = 0; i < total_files_found; ++i)
+			{
+				free(data[i].name);
+				free(data[i].path);
+			}
+			free(data);
+
+			if (!opt_verbose)
+				logger_stop();
+		}
 	}
-
-	get_files(dir, &data);
-
-	printf("\nResults:\n");
-	printf("  - found: %s%i file(s) bigger than %s%s\n", GREEN, total_files_found, human_size(file_size_limit), NORMAL_COLOR);
-	printf("  - unreadable files:         %s%i%s\n", BLUE, total_files_unprocessed, NORMAL_COLOR);
-	printf("  - unaccessible directories: %s%i%s\n\n", BLUE, total_dirs_unprocessed, NORMAL_COLOR);
-	printf("Logs:\n");
-	printf("  - files found:       %s%s%s\n", BLUE, RESULTS_TXT_FILE, NORMAL_COLOR);
-	printf("  - warnings & errors: %s%s%s\n\n", BLUE, STDERR_LOG_FILE, NORMAL_COLOR);
-
-	if (EXPORT_TO_FILE && total_files_found > 0)
-		save_to_file(&data, RESULTS_TXT_FILE);
-
-	for (int i = 0; i < total_files_found; ++i)
-	{
-		free(data[i].name);
-		free(data[i].path);
-	}
-	free(data);
-
-	logger_stop();
 
 	return EXIT_SUCCESS;
 }
@@ -98,42 +127,48 @@ static void get_files(char *dir, File_item **data)
 	}
 
 	DIR *d = opendir(dir);
-	if (d == NULL)
 	{
-		fprintf(stderr, "[warning] could not open directory: %s\n", dir);
-		++total_dirs_unprocessed;
-		return;
-	}
-
-	struct dirent *dp;
-	while ((dp = readdir(d)) != NULL)
-	{
-		if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
+		if (d == NULL)
 		{
-			if (strcmp(dir, "/") == 0)
-				dir = "";
-
-			char *p;
-			asprintf(&p, "%s/%s", dir, dp->d_name);
-
-			if (dp->d_type == DT_DIR)
-			{
-				get_files(p, data);
-			}
+			char msg[] = "[warning] could not open directory: %s\n";
+			if (opt_verbose)
+				printf(msg, dir);
 			else
+				fprintf(stderr, msg, dir);
+			++total_dirs_unprocessed;
+			return;
+		}
+
+		struct dirent *dp;
+		while ((dp = readdir(d)) != NULL)
+		{
+			if (strcmp(dp->d_name, ".") != 0 && strcmp(dp->d_name, "..") != 0)
 			{
-				size_t size = getFilesize(p);
+				if (strcmp(dir, "/") == 0)
+					dir = "";
 
-				if (size != 0 && size >= file_size_limit)
+				char p[500];
+				snprintf(p, sizeof(p), "%s/%s", dir, dp->d_name);
+
+				if (dp->d_type == 4)
+					get_files(p, data);
+				else
 				{
-					printf("%s%s/%s => %s%s\n", GREEN, dir, dp->d_name, human_size(size), NORMAL_COLOR);
+					size_t size = getFilesize(p);
 
-					File_item *f = new_file_item(dp->d_name, dir, size);
-					(*data)[total_files_found] = *f;
-					++total_files_found;
+					if (size != 0 && size >= file_size_limit)
+					{
+
+						printf("%s%s/%s => %s%s\n", GREEN, dir, dp->d_name, human_size(size), NORMAL_COLOR);
+						if (!opt_verbose)
+							fprintf(stderr, "[INFO] %s/%s => %s\n", dir, dp->d_name, human_size(size));
+
+						File_item *f = new_file_item(dp->d_name, dir, size);
+						(*data)[total_files_found] = *f;
+						++total_files_found;
+					}
 				}
 			}
-			free(p);
 		}
 	}
 	closedir(d);
@@ -145,7 +180,11 @@ static size_t getFilesize(const char *filename)
 
 	if (stat(filename, &st) < 0)
 	{
-		fprintf(stderr, "[warning] could not get size of: %s\n", filename);
+		char msg[] = "[warning] could not get size of: %s\n";
+		if (opt_verbose)
+			printf(msg, filename);
+		else
+			fprintf(stderr, msg, filename);
 		++total_files_unprocessed;
 		return 0;
 	}
@@ -158,24 +197,25 @@ static void save_to_file(File_item **data, const char *dst)
 	assert(total_files_found > 0);
 
 	FILE *f = fopen(dst, "w");
-
-	for (int i = 0; i < total_files_found; ++i)
 	{
-		if ((*data)[i].name != 0)
-			fprintf(f, "%s/%s => %s\n", (*data)[i].path, (*data)[i].name, human_size((*data)[i].size));
+		for (int i = 0; i < total_files_found; ++i)
+		{
+			if ((*data)[i].name != 0)
+				fprintf(f, "%s/%s => %s\n", (*data)[i].path, (*data)[i].name, human_size((*data)[i].size));
+		}
 	}
-
 	fclose(f);
 }
 
 static void usage(const char *program)
 {
-	printf("Usage: %s [OPTIONS...] [PATH]\n", program);
-	printf("Options:\n");
+	printf("\nUsage: %s [OPTIONS...] <PATH>\n", program);
+	printf("\nAnalyse recursively given directory and print out files of given size\n");
+	printf("\nOptions:\n");
 	printf("    -o      save results to specified file\n");
-	printf("    -v      print warning messages\n");
+	printf("    -v      print warning messages instead of logging to file\n");
 	printf("    -h      print this help and exit\n");
-	printf("Example:\n");
-	printf("    $ %s -o export.txt\n", program);
-	printf("    Save results to file \"%s\"\n", RESULTS_TXT_FILE);
+	printf("\nExample:\n");
+	printf("    $ %s -o /var\n", program);
+	printf("    Analyse \"/var\" and save results to \"%s\"\n\n", RESULTS_TXT_FILE);
 }
