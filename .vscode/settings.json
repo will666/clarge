@@ -11,7 +11,10 @@
         "string_view": "c",
         "initializer_list": "c",
         "file_item.h": "c",
-        "clarge.h": "c"
+        "clarge.h": "c",
+        "stdio.h": "c",
+        "unistd.h": "c",
+        "time.h": "c"
     },
     "editor.formatOnSave": true,
 }

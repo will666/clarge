@@ -1,4 +1,7 @@
+build/
 bin/
+logs/
 *.txt
 *.out
 *.o
+*.log

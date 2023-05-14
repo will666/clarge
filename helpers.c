@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <fcntl.h>
+#include <unistd.h>
 
 #include "helpers.h"
 
@@ -30,4 +33,23 @@ const char *human_size(size_t bytes)
     sprintf(output, "%.02lf %s", dblBytes, suffix[i]);
 
     return output;
+}
+
+void logger_start(char *log_file, bool initialize)
+{
+    if (initialize)
+    {
+        FILE *f = fopen(log_file, "w");
+        fclose(f);
+    }
+
+    int stderr_log_file = open(log_file, O_RDWR | O_CREAT | O_APPEND, 0600);
+    dup2(stderr_log_file, STDERR_FILENO);
+    close(stderr_log_file);
+}
+
+void logger_stop(void)
+{
+    fflush(stderr);
+    close(STDERR_FILENO);
 }

@@ -5,6 +5,12 @@
 
 #include "file_item.h"
 
+#ifndef HELPERS_H
+#define LOG_PATH "logs/"
+#define STDERR_LOG_FILE LOG_PATH "errors.log"
+#define RESULTS_TXT_FILE LOG_PATH "results.txt"
+#endif
+
 #define NORMAL_COLOR "\x1B[0m"
 #define GREEN "\x1B[32m"
 #define BLUE "\x1B[34m"
@@ -17,7 +23,7 @@
 #define BIG_FILE_SIZE (1024 * 1024 * 1024)
 #endif
 
-#define ERR_HEAP_ALLOC_MSG "error: could not allocate heap memory"
+#define ERR_HEAP_ALLOC_MSG "[error] could not allocate heap memory"
 
 static void get_files(char *dir, File_item **data);
 static void resize_data_heap(File_item **data, const size_t prev_size, const size_t nb_items);
