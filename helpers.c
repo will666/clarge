@@ -18,7 +18,7 @@ char *shift_args(int *argc, char ***argv)
 const char *human_size(size_t bytes)
 {
     char *suffix[] = {"B", "KiB", "MiB", "GiB", "TiB"};
-    char length = sizeof(suffix) / sizeof(suffix[0]);
+    int length = sizeof(suffix) / sizeof(suffix[0]);
 
     int i = 0;
     double dblBytes = bytes;
