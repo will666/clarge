@@ -1,23 +1,23 @@
 CC = clang
 CFLAGS = -Wall -Wextra -std=c11 -pedantic
 BIN = clarge
-OUTPUT = ./build/$(BIN)
+OUTPUT = ./build
 OPTIM = -O3
 SRC = clarge.c file_item.c helpers.c
 
 .PHONY: build run prod static clean
 
 build:
-	$(CC) $(CFLAGS) -g -o $(OUTPUT) $(SRC)
+	$(CC) $(CFLAGS) -g -o $(OUTPUT)/$(BIN) $(SRC)
 
 run: build
-	$(OUTPUT) $(DIR)
+	$(OUTPUT)/$(BIN) $(DIR)
 
 prod:
-	$(CC) $(CFLAGS) $(OPTIM) -o $(OUTPUT) $(SRC)
+	$(CC) $(CFLAGS) $(OPTIM) -o $(OUTPUT)/$(BIN) $(SRC)
 
 static:
-	$(CC) $(CFLAGS) -static $(OPTIM) -o $(OUTPUT) $(SRC)
+	$(CC) $(CFLAGS) -static $(OPTIM) -o $(OUTPUT)/$(BIN) $(SRC)
 
 clean:
 	rm -rf *.txt *.o *.out ./build/* ./logs/*
