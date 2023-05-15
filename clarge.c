@@ -9,7 +9,7 @@
 
 // - Testing...
 // #define LOG_PATH "./logs/"
-// #define BIG_FILE_SIZE (1024 * 1024) // overrides from main.h - testing...
+// #define TARGET_FILE_SIZE (1024 * 1024) // overrides from main.h - testing...
 // #define ITEMS_ALLOC 10000
 // -
 
@@ -110,6 +110,11 @@ static void resize_data_heap(File_item **data, const size_t prev_size, const siz
 {
 	size_t new_size = prev_size + nb_items;
 	*data = (File_item *)realloc(*data, new_size * sizeof(File_item));
+	if (*data == NULL)
+	{
+		printf("[error] could not allocate dynamic memory\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 static void get_files(char *dir, File_item **data)
@@ -199,7 +204,9 @@ static void save_to_file(File_item **data, const char *dst)
 	assert(total_files_found > 0);
 
 	FILE *f = fopen(dst, "w");
-	{	if (f == NULL) {
+	{
+		if (f == NULL)
+		{
 			printf("Error: could not open file %s\n", dst);
 			exit(EXIT_FAILURE);
 		}
