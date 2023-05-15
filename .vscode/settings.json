@@ -14,7 +14,10 @@
         "clarge.h": "c",
         "stdio.h": "c",
         "unistd.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "__bit_reference": "c",
+        "__split_buffer": "c",
+        "vector": "c"
     },
     "editor.formatOnSave": true,
 }
