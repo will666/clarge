@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <stdbool.h>
 #include <assert.h>
+#include <time.h>
 
 // - Testing...
 // #define LOG_PATH "./logs/"
