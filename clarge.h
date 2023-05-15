@@ -15,7 +15,7 @@
 #endif
 
 #ifndef RESULTS_TXT_FILE
-#define RESULTS_TXT_FILE "clarge_results.txt"
+#define RESULTS_TXT_FILE "./clarge_results.txt"
 #endif
 
 #define NORMAL_COLOR "\x1B[0m"
