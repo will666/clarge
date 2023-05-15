@@ -33,7 +33,7 @@ int main(int argc, char **argv)
 
 	if (argc == 0)
 	{
-		printf("[error] %s - no path specified, see help below\n\n", log_time());
+		printf("\nno path specified, see help below\n");
 		usage(program);
 		return EXIT_FAILURE;
 	}
@@ -41,16 +41,7 @@ int main(int argc, char **argv)
 	while (argc > 0)
 	{
 		char *flag = shift_args(&argc, &argv);
-		if (strcmp(flag, "-d") == 0)
-		{
-			if (argc <= 0)
-			{
-				printf("[error] %s - no path specified, see help below\n\n", log_time());
-				return EXIT_FAILURE;
-			}
-			break;
-		}
-		else if (strcmp(flag, "-v") == 0)
+		if (strcmp(flag, "-v") == 0)
 		{
 			opt_verbose = true;
 		}
@@ -208,7 +199,10 @@ static void save_to_file(File_item **data, const char *dst)
 	assert(total_files_found > 0);
 
 	FILE *f = fopen(dst, "w");
-	{
+	{	if (f == NULL) {
+			printf("Error: could not open file %s\n", dst);
+			exit(EXIT_FAILURE);
+		}
 		for (int i = 0; i < total_files_found; ++i)
 		{
 			if ((*data)[i].name != 0)
