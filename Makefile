@@ -11,13 +11,13 @@ build:
 	$(CC) $(CFLAGS) -g -o $(OUTPUT)/$(BIN) $(SRC)
 
 run: build
-	$(OUTPUT)/$(BIN) $(DIR)
+	@$(OUTPUT)/$(BIN) $(DIR)
 
 prod:
-	$(CC) $(CFLAGS) $(OPTIM) -o $(OUTPUT)/$(BIN) $(SRC)
+	@$(CC) $(CFLAGS) $(OPTIM) -o $(OUTPUT)/$(BIN) $(SRC)
 
 static:
-	$(CC) $(CFLAGS) -static $(OPTIM) -o $(OUTPUT)/$(BIN) $(SRC)
+	@$(CC) $(CFLAGS) -static $(OPTIM) -o $(OUTPUT)/$(BIN) $(SRC)
 
 clean:
-	rm -rf *.txt *.o *.out ./build/* ./logs/*
+	@rm -rf *.txt *.o *.out ./build/* ./logs/*
