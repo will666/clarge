@@ -38,5 +38,6 @@ char *shift_args(int *argc, char ***argv); // extracted from https://github.com/
 const char *human_size(size_t bytes);      // extracted from https://gist.github.com/dgoguerra/7194777
 void logger_start(char *log_file, bool initialize);
 void logger_stop(void);
+char *log_time(void);
 
 #endif

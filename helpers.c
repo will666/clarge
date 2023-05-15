@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <time.h>
 
 #include "helpers.h"
 
@@ -52,4 +53,16 @@ void logger_stop(void)
 {
     fflush(stderr);
     close(STDERR_FILENO);
+}
+
+char *log_time(void)
+{
+    static char buf[150];
+    time_t curtime;
+    struct tm *loc_time;
+    curtime = time(NULL);
+    loc_time = localtime(&curtime);
+    strftime(buf, sizeof(buf), "%Y/%m/%d %X", loc_time);
+
+    return buf;
 }

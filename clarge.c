@@ -29,7 +29,7 @@ int main(int argc, char **argv)
 
 	if (argc == 0)
 	{
-		printf("[error] no path specified, see help below\n\n");
+		printf("[error] %s - no path specified, see help below\n\n", log_time());
 		usage(program);
 		return EXIT_FAILURE;
 	}
@@ -41,8 +41,8 @@ int main(int argc, char **argv)
 		{
 			if (argc <= 0)
 			{
-				printf("[error] no path specified, see help below\n\n");
-				exit(1);
+				printf("[error] %s - no path specified, see help below\n\n", log_time());
+				return EXIT_FAILURE;
 			}
 			break;
 		}
@@ -57,7 +57,7 @@ int main(int argc, char **argv)
 		else if (strcmp(flag, "-h") == 0)
 		{
 			usage(program);
-			exit(0);
+			return EXIT_SUCCESS;
 		}
 		else
 		{
@@ -81,9 +81,12 @@ int main(int argc, char **argv)
 			printf("  - found: %s%i file(s) bigger than %s%s\n", GREEN, total_files_found, human_size(file_size_limit), NORMAL_COLOR);
 			printf("  - unreadable files:         %s%i%s\n", BLUE, total_files_unprocessed, NORMAL_COLOR);
 			printf("  - unaccessible directories: %s%i%s\n\n", BLUE, total_dirs_unprocessed, NORMAL_COLOR);
-			printf("Logs:\n");
-			printf("  - files found:       %s%s%s\n", BLUE, RESULTS_TXT_FILE, NORMAL_COLOR);
-			printf("  - warnings & errors: %s%s%s\n\n", BLUE, STDERR_LOG_FILE, NORMAL_COLOR);
+			if (!opt_verbose || opt_save_outpout)
+				printf("Logs:\n");
+			if (opt_save_outpout)
+				printf("  - files found:       %s%s%s\n", BLUE, RESULTS_TXT_FILE, NORMAL_COLOR);
+			if (!opt_verbose)
+				printf("  - warnings & errors: %s%s%s\n\n", BLUE, STDERR_LOG_FILE, NORMAL_COLOR);
 
 			if (opt_save_outpout && total_files_found > 0)
 				save_to_file(&data, RESULTS_TXT_FILE);
@@ -130,11 +133,11 @@ static void get_files(char *dir, File_item **data)
 	{
 		if (d == NULL)
 		{
-			char msg[] = "[warning] could not open directory: %s\n";
+			char msg[] = "[warning] %s - could not open directory: %s\n";
 			if (opt_verbose)
-				printf(msg, dir);
+				printf(msg, log_time(), dir);
 			else
-				fprintf(stderr, msg, dir);
+				fprintf(stderr, msg, log_time(), dir);
 			++total_dirs_unprocessed;
 			return;
 		}
@@ -158,10 +161,9 @@ static void get_files(char *dir, File_item **data)
 
 					if (size != 0 && size >= file_size_limit)
 					{
-
 						printf("%s%s/%s => %s%s\n", GREEN, dir, dp->d_name, human_size(size), NORMAL_COLOR);
 						if (!opt_verbose)
-							fprintf(stderr, "[INFO] %s/%s => %s\n", dir, dp->d_name, human_size(size));
+							fprintf(stderr, "[INFO] %s - %s/%s => %s\n", log_time(), dir, dp->d_name, human_size(size));
 
 						File_item *f = new_file_item(dp->d_name, dir, size);
 						(*data)[total_files_found] = *f;
@@ -180,11 +182,11 @@ static size_t getFilesize(const char *filename)
 
 	if (stat(filename, &st) < 0)
 	{
-		char msg[] = "[warning] could not get size of: %s\n";
+		char msg[] = "[warning] %s - could not get size of: %s\n";
 		if (opt_verbose)
-			printf(msg, filename);
+			printf(msg, log_time(), filename);
 		else
-			fprintf(stderr, msg, filename);
+			fprintf(stderr, msg, log_time(), filename);
 		++total_files_unprocessed;
 		return 0;
 	}
