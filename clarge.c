@@ -25,6 +25,9 @@ static bool opt_save_outpout = false;
 
 int main(int argc, char **argv)
 {
+	double time_spent = 0.0;
+	clock_t begin = clock();
+
 	const char *program = shift_args(&argc, &argv);
 
 	if (argc == 0)
@@ -77,17 +80,6 @@ int main(int argc, char **argv)
 
 			get_files(file_path, &data);
 
-			printf("\nResults:\n");
-			printf("  - found: %s%i file(s) bigger than %s%s\n", GREEN, total_files_found, human_size(file_size_limit), NORMAL_COLOR);
-			printf("  - unreadable files:         %s%i%s\n", BLUE, total_files_unprocessed, NORMAL_COLOR);
-			printf("  - unaccessible directories: %s%i%s\n\n", BLUE, total_dirs_unprocessed, NORMAL_COLOR);
-			if (!opt_verbose || opt_save_outpout)
-				printf("Logs:\n");
-			if (opt_save_outpout)
-				printf("  - files found:       %s%s%s\n", BLUE, RESULTS_TXT_FILE, NORMAL_COLOR);
-			if (!opt_verbose)
-				printf("  - warnings & errors: %s%s%s\n\n", BLUE, STDERR_LOG_FILE, NORMAL_COLOR);
-
 			if (opt_save_outpout && total_files_found > 0)
 				save_to_file(&data, RESULTS_TXT_FILE);
 
@@ -100,6 +92,22 @@ int main(int argc, char **argv)
 
 			if (!opt_verbose)
 				logger_stop();
+
+			clock_t end = clock();
+			time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+			printf("\nResults:\n");
+			printf("  - found: %s%i file(s) bigger than %s%s\n", GREEN, total_files_found, human_size(file_size_limit), NORMAL_COLOR);
+			printf("  - unreadable file(s):       %s%i%s\n", BLUE, total_files_unprocessed, NORMAL_COLOR);
+			printf("  - unaccessible directories: %s%i%s\n", BLUE, total_dirs_unprocessed, NORMAL_COLOR);
+			printf("  - execution time:           %.2fs\n", time_spent);
+			if (!opt_verbose || opt_save_outpout)
+				printf("\nLogs:\n");
+			if (opt_save_outpout)
+				printf("  - files found:       %s%s%s\n", GREEN, RESULTS_TXT_FILE, NORMAL_COLOR);
+			if (!opt_verbose)
+				printf("  - warnings & errors: %s%s%s\n", BLUE, STDERR_LOG_FILE, NORMAL_COLOR);
+			printf("\n");
 		}
 	}
 
